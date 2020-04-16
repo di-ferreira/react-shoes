@@ -1,98 +1,67 @@
-import React from 'react';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { MdAddShoppingCart } from 'react-icons/md';
+import api from '../../services/api';
+import { formatPrice } from '../../util/format';
+import * as CartActions from '../../store/modules/cart/actions';
 import { ProductList } from './styles';
 
-export default function Home() {
-   return (
-      <ProductList>
-         <li>
-            <img
-               src="https://imgcentauro-a.akamaihd.net/500x500/93000902/tenis-adidas-8k-masculino-img.jpg"
-               alt="Tênis Addidas Preto"
-            />
-            <strong>Tênis Addidas Preto</strong>
-            <span>R$ 129,90</span>
-            <button type="button">
-               <div>
-                  <MdAddShoppingCart size={16} color="#fff" /> 3
-               </div>
-               <span>ADICIONAR AO CARRINHO</span>
-            </button>
-         </li>
+class Home extends Component {
+   state = {
+      products: [],
+   };
 
-         <li>
-            <img
-               src="https://imgcentauro-a.akamaihd.net/500x500/93000902/tenis-adidas-8k-masculino-img.jpg"
-               alt="Tênis Addidas Preto"
-            />
-            <strong>Tênis Addidas Preto</strong>
-            <span>R$ 129,90</span>
-            <button type="button">
-               <div>
-                  <MdAddShoppingCart size={16} color="#fff" /> 3
-               </div>
-               <span>ADICIONAR AO CARRINHO</span>
-            </button>
-         </li>
+   async componentDidMount() {
+      const response = await api.get('products');
+      const data = response.data.map((product) => ({
+         ...product,
+         priceFormated: formatPrice(product.price),
+      }));
+      this.setState({ products: data });
+   }
 
-         <li>
-            <img
-               src="https://imgcentauro-a.akamaihd.net/500x500/93000902/tenis-adidas-8k-masculino-img.jpg"
-               alt="Tênis Addidas Preto"
-            />
-            <strong>Tênis Addidas Preto</strong>
-            <span>R$ 129,90</span>
-            <button type="button">
-               <div>
-                  <MdAddShoppingCart size={16} color="#fff" /> 3
-               </div>
-               <span>ADICIONAR AO CARRINHO</span>
-            </button>
-         </li>
+   handleAddProduct = (product) => {
+      const { addToCart } = this.props;
+      addToCart(product);
+   };
 
-         <li>
-            <img
-               src="https://imgcentauro-a.akamaihd.net/500x500/93000902/tenis-adidas-8k-masculino-img.jpg"
-               alt="Tênis Addidas Preto"
-            />
-            <strong>Tênis Addidas Preto</strong>
-            <span>R$ 129,90</span>
-            <button type="button">
-               <div>
-                  <MdAddShoppingCart size={16} color="#fff" /> 3
-               </div>
-               <span>ADICIONAR AO CARRINHO</span>
-            </button>
-         </li>
-         <li>
-            <img
-               src="https://imgcentauro-a.akamaihd.net/500x500/93000902/tenis-adidas-8k-masculino-img.jpg"
-               alt="Tênis Addidas Preto"
-            />
-            <strong>Tênis Addidas Preto</strong>
-            <span>R$ 129,90</span>
-            <button type="button">
-               <div>
-                  <MdAddShoppingCart size={16} color="#fff" /> 3
-               </div>
-               <span>ADICIONAR AO CARRINHO</span>
-            </button>
-         </li>
+   render() {
+      const { products } = this.state;
+      const { amount } = this.props;
 
-         <li>
-            <img
-               src="https://imgcentauro-a.akamaihd.net/500x500/93000902/tenis-adidas-8k-masculino-img.jpg"
-               alt="Tênis Addidas Preto"
-            />
-            <strong>Tênis Addidas Preto</strong>
-            <span>R$ 129,90</span>
-            <button type="button">
-               <div>
-                  <MdAddShoppingCart size={16} color="#fff" /> 3
-               </div>
-               <span>ADICIONAR AO CARRINHO</span>
-            </button>
-         </li>
-      </ProductList>
-   );
+      return (
+         <ProductList>
+            {products.map((product) => (
+               <li key={product.id}>
+                  <img src={product.image} alt={product.title} />
+                  <strong>{product.title}</strong>
+                  <span>{product.priceFormated}</span>
+                  <button
+                     type="button"
+                     onClick={() => this.handleAddProduct(product)}
+                  >
+                     <div>
+                        <MdAddShoppingCart size={16} color="#fff" />{' '}
+                        {amount[product.id] || 0}
+                     </div>
+                     <span>ADICIONAR AO CARRINHO</span>
+                  </button>
+               </li>
+            ))}
+         </ProductList>
+      );
+   }
 }
+
+const mapStateToProps = (state) => ({
+   amount: state.cart.reduce((amount, product) => {
+      amount[product.id] = product.amount;
+      return amount;
+   }, {}),
+});
+
+const mapDispatchToProps = (dispatch) =>
+   bindActionCreators(CartActions, dispatch);
+
+export default connect(mapStateToProps, mapDispatchToProps)(Home);

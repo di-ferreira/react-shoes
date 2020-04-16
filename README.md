@@ -1,3 +1,3 @@
 ## React Shoes
 
-Site criado para estudo do framework ReactJS e Redux
+Site criado para estudo do framework ReactJS e Redux.
